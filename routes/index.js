@@ -27,7 +27,7 @@ router.get( '/adminlogin' , adminLogin );
 //*******************************************************************************************************************
 
 
-const{ signup , login , sendOtp } = require("../controller/Auth");
+const{ signup , login , sendOtp } = require("../controller/auth");
 
 router.post("/signup" , signup);
 router.post("/login" , login);

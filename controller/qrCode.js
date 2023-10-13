@@ -5,7 +5,7 @@ const QrCodeData=require('../model/qrcode_Model');
 const qr=require('qrcode');
 
 
-const generateQRCodeDataURL = async (bookId, userId) => {
+const generateQRCodeDataURL = async (userId, bookId) => {
 
     const qrData = JSON.stringify({ userId, bookId });
   

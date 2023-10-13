@@ -94,51 +94,10 @@ exports.createBookCategory = async (req, res) => {
   };
   
 
-
-exports.deleteBookCategory = async ( req , res ) => {
-
-try{
-    
-const { name } = req.body;
-    
-
-const response = await Book_category.find({ name  : name }).populate('books');
-
-
-if( response.books ){
-    return res.status(400).json({
-        success:false,
-        message:"Cannot delete model with books inside"  })
-
-}
-
-
-const delete_res = await Book_category.deleteOne({ name  : name });
-
-if( !delete_res ){
-    return res.status(404).json({
-        success:false,
-        message:"Unable to delete category model"  })  
-}
-
-return res.status(200).json({
-    success:true,
-    message:"Category model deleted successfully"  })  
-
-}
-    
-catch(error){
-    return res.status(500).json({
-        success:false,
-        message:"Something went wrong while deleting category model"  })     
-}
-    
-}
-
 exports.deleteBook = async ( req , res ) => {
 
 try{
-    const{ bookid , category }=req.body;
+    const{ bookid , category } = req.body;
 
         if( !bookid || !category ){
             return res.status().json({
@@ -223,9 +182,9 @@ catch(error){
 
         return res.status(500).json({
             success:false,
-            message:"Something went wrong while updating the book"
-        });     
-}
+            message:"Something went wrong while updating the book"  });     
+
+          }
             
 }
 
@@ -313,7 +272,50 @@ catch (error) {
       console.error(error);
       return res.status(500).json({
         success: false,
-        message: "Login Failure. Please Try Again",
-      });
+        message: "Login Failure. Please Try Again",  });
     }
   };
+
+
+  exports.deleteBookCategory = async (req, res) => {
+    try {
+      const { name } = req.body;
+  
+      const response = await Book_category.findOne({ name }).populate('books');
+  
+      if (response) {
+        if (response.books.length === 0) {
+          // Check if the response exists and if it has no associated books
+          const deletionResult = await Book_category.deleteOne({ name });
+  
+          if (deletionResult.deletedCount === 1) {
+            return res.status(200).json({
+              success: true,
+              message: "Category model deleted successfully",
+            });
+          } else {
+            return res.status(404).json({
+              success: false,
+              message: "Unable to delete category model",
+            });
+          }
+        } else {
+          return res.status(400).json({
+            success: false,
+            message: "Cannot delete model with books inside",  });
+        }
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: "Category model not found",
+        });
+      }
+    }
+    
+    catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Something went wrong while deleting category model",  });
+    }
+  };
+  

@@ -22,7 +22,7 @@ const QrSchema = new mongoose.Schema({
   createdAt:{
     type:Date,
     default:new Date(),
-    expires: "2hr"
+    expires: 60*10,
   }
   
 });

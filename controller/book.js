@@ -1,6 +1,8 @@
 const User = require("../model/User");
 const Book_category = require("../model/Book_category");
 const Book = require("../model/Book");
+const mailsender = require("../utils/mailSender");
+
 
 exports.getAllBooks = async( req , res ) => {
 
@@ -24,9 +26,9 @@ try{
 }
 
 catch(error){
-  return res.status(400).json({
+  return res.status(500).json({
     success:false,
-    data:{},
+    //data:{},
     message:"Cannot fetch Books ",
     err:error
   })
@@ -47,27 +49,39 @@ console.log(user_id);
 
 const user = await User.findById(user_id).populate("books");
 
+
 if( !user ){
     return res.status(404).json({
         success:false,
-        message:"User not found"
-    })
+        message:"User not found"  })
 }
 
 const all_books = user.books;
 
+const issuedBookIds = user.books;
+
+console.log(issuedBookIds);
+
+
+const bookCategories = await Book_category.find({ books: { $in: issuedBookIds } });
+
+
+//const mainbook = await Book_category.find({ books : issuedBookIds })
+
+console.log(bookCategories);
+
 return res.status(200).json({
     success:true,
-    data:all_books,
-    message:"Fetched Issued Books successfully"
-})
+    bookCategories,
+    all_books,
+    message:"Fetched Issued Books successfully"  })
 
 }
 
 catch(error){
-    return res.status(400).json({
+    return res.status(500).json({
         success:false,
-        data:{},
+        //data:{},
         message:"Cannot fetch Books ",
         err:error
       })
@@ -109,7 +123,7 @@ const books = await Book_category.find({name: name});
 }
 
 catch(error){
-    return res.status(400).json({
+    return res.status(500).json({
         success:false,
         data:{},
         message:"Cannot fetch Books ",
@@ -140,7 +154,7 @@ exports.issueBooksToUser = async (req, res) => {
       console.log(bookIds)
       
       if ( user.books.length + bookIds.length > 5 ) {
-        return res.status(400).json({
+        return res.status(403).json({
           success: false,
           message: 'User has already reached the maximum book limit'   });
       }
@@ -226,41 +240,69 @@ catch (error) {
   };
 
 
-exports.reIssue = async( req,res ) => {
+exports.reIssue = async( req , res ) => {
     
 try{
   const {bookId} = req.body;
+  const user_id = req.user.id;
 
+const user_details = await User.findById(user_id);
 
-const book_detail = await Book.findById(bookId);
+if( !user_details ){
+return res.status(404).json({
+  success : false,
+  message : "User not found"  })
+  
+}
 
+const book_detail2 = await Book.findOne({book_id:bookId});
+
+if(!book_detail2){
+  return res.status(404).json({
+    success:false,
+    message:"Book not found"  });
+}
+
+const book_detail = await Book.findById( book_detail2._id );
 
 if( !book_detail ){
-    return res.status().json({
+    return res.status(404).json({
         success:false,
-        message:"Book not found"
-    })
+        message:"Book not found"  })
 }
 
 if( book_detail.count > 1 ){
-    return res.status(400).json({
+    return res.status(403).json({
         success:false,
-        message:"Cannot reissue book more than twice"
-    })
+        message:"Cannot reissue book more than twice"  })
 }
 
+var ddate = book_detail.deadline;
+const date2 = new Date();
 
+if( date2 > ddate ){
+
+  const diffTime = date2 - ddate;
+ 
+  const daysDifference = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  user_details.fine += (daysDifference*10); 
+  
+  await user_details.save(); }
+
+var date = new Date();
 book_detail.count += 1;
-book_detail.issue_date = Date.now();
+book_detail.issue_date = new Date();
+book_detail.deadline = new Date((date.getTime () + 30*24*60*60*1000));
+
 await book_detail.save();
 
 return res.status(200).json({
     success:true,
-    message:"Reissued book successfully"
-});
+    message:"Reissued book successfully"  });
 }
 
 catch(error){
+  console.log(error.message);
     return res.status(500).json({
         success:false,
         message:"Something went wrong.Please try again later!"  })   
@@ -336,9 +378,90 @@ exports.EmptyBooks = async(req,res)=>{
     message:"Successfully fetched all unavailable books"
   })
   }catch(error){
-    return res.status(404).json({
+    return res.status(500).json({
       success:false,
-      message:"Internal server error"
-    })
+      message:"Internal server error"   })
   }
+
+}
+
+
+async function sendRequest( email , bid ){ 
+ 
+  try {
+        
+      const res = await mailsender(
+
+       email,
+       "Request to return book",
+        `"Please return Your book with id ${bid}"`,
+      );
+
+      console.log(res);
+      console.log("email sended successfully")
+
+return 1;
+
+  } catch (error) {
+ 
+      console.log(error.message)
+      throw new Error("Email cannot be sended");
+  }
+}
+
+
+exports.requestbook = async( req , res ) => {
+
+try{
+const {bookId} = req.body;
+
+const bookModel = await Book.findOne({book_id : bookId});
+
+console.log(bookModel);
+
+if(!bookModel){
+  return res.status(404).json({
+    success:false,
+    message:"Incorrect bookId"  });
+}
+
+console.log(bookModel._id);
+
+const user = await User.findOne({ books : bookModel._id }).populate('books');
+
+console.log("hello");
+
+console.log(user);
+
+if(!user){
+  return res.status(404).json({
+    success:false,
+    message:"This book is not issued by any user" });
+}
+const myemail = user.email;
+console.log(myemail);
+
+const email_res = await sendRequest( myemail , bookId );
+
+console.log(email_res);
+
+if( !email_res ){
+  return res.status(402).json({
+    success:false,
+    message:"Email not sent" });
+}
+
+return res.status(200).json({
+  success:true,
+  message:"Request was send to user successfully"  })
+
+}
+
+catch(error){
+  return res.status(500).json({
+    success:false,
+    message:"Failed to send email to user" });
+}
+
+
 }

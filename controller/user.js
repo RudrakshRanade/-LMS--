@@ -12,8 +12,7 @@ console.log(user_id);
 if( !firstName || !lastName ){
 return res.status(404).json({
     success:false,
-    message:"All fields are required"
-})
+    message:"All fields are required"  })
 }
 
 const response = await User.findByIdAndUpdate(
@@ -44,10 +43,44 @@ message: 'user updated successfully'  });
 }
 
 catch( error ){
-    return res.status(400).json({
+    return res.status(500).json({
         success:false,
         message:"Could not update your profile!",
     })
 }
 
 }
+
+
+exports.getFine = async( req , res ) => {
+
+try{
+
+const user_id = req.user.id;
+
+const user_details = await User.findById(user_id);
+    
+if( !user_details ){
+return res.status(404).json({
+    success:false,
+    message:"User does not exist"  })
+}
+ 
+const data = user_details.fine;
+
+return res.status(200).json({
+    success : true,
+    data,
+    message : "Fine calcutated successfully"  })
+
+}
+
+catch(error){
+return res.status(500).json({
+    success:false,
+    message:"Cannot fetch fine currently"
+})
+
+}
+
+} 

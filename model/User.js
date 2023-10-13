@@ -30,6 +30,11 @@ token : {
     type:String,
 },
 
+fine : {
+    type : Number,
+    default : 0,
+},
+
 books : [{
     type:mongoose.Schema.Types.ObjectId,
     ref:"Book",

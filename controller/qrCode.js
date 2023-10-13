@@ -60,11 +60,9 @@ exports.generates = async(req,res)=>{
 
       await response.save();
     }
-    //craete krna h
-
 
     // Return the generated QR code URL to the frontend
-    res.json({ message: 'QR code data stored or updated successfully', qrDataURL: qrCodeData.qrDataURL });
+    res.status(200).json({ message: 'QR code data stored or updated successfully', qrDataURL: qrCodeData.qrDataURL });
   } 
   
 catch (err) {
@@ -89,7 +87,7 @@ exports.scan = async(req,res)=>{
         // Check if the QR code data with the provided userId and bookId exists
         const qrCodeData = await QrCodeData.findOne({userId:userId, bookId:bookId });
     
-console.log(qrCodeData);
+//console.log(qrCodeData);
 
         if (!qrCodeData) {
           return res.status(404).json({ error: 'QR code data not found' });
@@ -101,19 +99,34 @@ console.log(qrCodeData);
         if(!myBook.issue_date){
           return res.status(400).json({ error: 'Book is not currently issued' });
        }
-        //Retun 
-        myBook.issue_date=null;
-        //logic for fine calculation
-        myBook.deadline=null;
-        await myBook.save();
+
+
         const response = await Book.findOne({book_id : bookId});;
         const Book_cat = await Book_Category.findOne({books : response._id }).exec();
         Book_cat.available+=1;
         await Book_cat.save();
         const user = await User.findById(userId).populate("books");
 
-console.log(response._id);
-console.log(user);
+// console.log(response._id);
+// console.log(user);
+
+var date2 = new Date(); 
+var ddate = myBook.deadline;
+
+if( date2 > ddate ){
+
+  const diffTime = date2 - ddate;
+ 
+  const daysDifference = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  user.fine += (daysDifference*10); 
+  
+  await user.save();  }
+
+        //Retun 
+      myBook.issue_date=null;
+      myBook.deadline=null;
+
+await myBook.save();
 
         user.books.pull(response._id);
         await user.save();
@@ -128,7 +141,7 @@ catch(error){
 
   console.log(error.message);
   
-      return res.status(400).json({
+      return res.status(500).json({
         success:false,
         message:"Was not able to return the book"  });
     }

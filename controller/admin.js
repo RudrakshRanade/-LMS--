@@ -1,7 +1,6 @@
 const Book = require('../model/Book');
 const Book_category = require("../model/Book_category");
 const Admin = require("../model/Admin");
-// const bcrypt = require('bcrypt');
 
 exports.createBook = async ( req , res ) => {
 
@@ -11,7 +10,7 @@ const { bookid , condition , category } = req.body;
 
 
 if( !bookid || !condition || !category ){
-    return res.status().json({
+    return res.status(404).json({
         success:false,
         message:"All fields are required"   })
 }
@@ -55,7 +54,7 @@ catch(error){
 
     console.log(error.message);
 
-    return res.status(404).json({
+    return res.status(500).json({
         success:false,
         message:"cannot add book"  })
 }
@@ -76,7 +75,7 @@ exports.createBookCategory = async (req, res) => {
       });
   
       if (!response) {
-        return res.status(402).json({
+        return res.status(404).json({
           success: false,
           message: "Unable to add new category",
         });
@@ -103,22 +102,21 @@ try{
 const { name } = req.body;
     
 
-const response = await Book_category.find({ name  : name });
+const response = await Book_category.find({ name  : name }).populate('books');
 
-console.log(response);
 
-// if( response.books.length !== 0 || response.total !== 0 || response.available !== 0  ){
-//     return res.status(400).json({
-//         success:false,
-//         message:"Cannot delete model with books inside"  })
+if( response.books ){
+    return res.status(400).json({
+        success:false,
+        message:"Cannot delete model with books inside"  })
 
-// }
+}
 
 
 const delete_res = await Book_category.deleteOne({ name  : name });
 
 if( !delete_res ){
-    return res.status(400).json({
+    return res.status(404).json({
         success:false,
         message:"Unable to delete category model"  })  
 }
@@ -160,7 +158,7 @@ console.log(myresponse._id);
     const response = await Book.deleteOne({ _id:myresponse._id });
 
     if( !response ){
-        return res.status().json({
+        return res.status(402).json({
             success:false,
             message:"Unable to delete book"  })
     }
@@ -179,7 +177,7 @@ catch(error){
 
 console.log(error.message);
 
-        return res.status(404).json({
+        return res.status(500).json({
             success:false,
             message:"Was not able to delete the book"  })    
 }
@@ -192,14 +190,14 @@ try{
        const {bookid,condition}=req.body;
        
        if(!bookid || !condition){
-        return res.status().json({
+        return res.status(404).json({
             success:false,
             message:"All fields required"  })
        }
       const response=await Book.findOne({book_id:bookid});
       console.log(response);
       if(!response){
-        return res.status(400).json({
+        return res.status(404).json({
             success:false,
             message:"Unable to update update the book"
         });
@@ -208,7 +206,7 @@ try{
        const response2= await Book.findByIdAndUpdate(response._id,{condition:condition},{new:true});
        console.log(response2);
        if(!response2){
-        return res.status(400).json({
+        return res.status(404).json({
             success:false,
             message:"Unable to update update the book"
         });
@@ -223,7 +221,7 @@ catch(error){
 
   console.log(error.message);
 
-        return res.status(404).json({
+        return res.status(500).json({
             success:false,
             message:"Something went wrong while updating the book"
         });     
@@ -243,7 +241,7 @@ const response = await Book_category.find({ name : name });
 console.log(response);
 
 if( !response ){
-    return res.status(402).json({
+    return res.status(404).json({
         success:false,
         message:"Not able to update category model"   });     
 }
@@ -255,16 +253,9 @@ const update_res = await Book_category.findOneAndUpdate({ name : name }, {
     description
   }, { new: true });
 
-// const update_res = await Book_category.findByIdAndUpdate( id , {
-//     author: author,
-//     price: price,
-//     pages: pages,
-//     description: description },{new:true});
-
-
 
 if( !update_res ){
-        return res.status(402).json({
+        return res.status(404).json({
             success:false,
             message:"Was Not able to update category model"   });     
     }
@@ -293,13 +284,13 @@ exports.adminLogin = async (req, res) => {
       const { ID , key } = req.body;
   
       if (!ID || !key) {
-        return res.status(400).json({ msg: "Please enter all fields" });
+        return res.status(404).json({ msg: "Please enter all fields" });
       }
   
       const admin = await Admin.findOne({ ID:ID });
   
       if (!admin) {
-        return res.status(401).json({
+        return res.status(404).json({
           success: false,
           message: "Admin not Found",  });
       }

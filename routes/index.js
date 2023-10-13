@@ -17,7 +17,7 @@ router.delete( '/deletebookcategory' , deleteBookCategory );
 router.delete( '/deletebook' , deleteBook );
 router.put( '/updatebook' , updateBook );
 router.put( '/updatebookcategory' , updateBookCategory );
-router.get( '/adminlogin' , adminLogin );
+router.post( '/adminlogin' , adminLogin );
 
 
 // *****************************************************************************************************************
@@ -43,8 +43,8 @@ router.post("/sendotp" , sendOtp);
 
 const{ generates , scan} = require("../controller/qrCode");
 
-router.post("/generateQr", auth , generates);
-router.post("/Qrreturn" , scan);
+router.post("/generateqr", auth , generates);
+router.post("/scanqr" , scan);
 
 
 // *****************************************************************************************************************
@@ -54,9 +54,10 @@ router.post("/Qrreturn" , scan);
 //*******************************************************************************************************************
 
 
-const { update_user } = require("../controller/user");
+const { update_user , getFine } = require("../controller/user");
 
-router.put( '/update_user' , auth , update_user );
+router.put( '/updateuser' , auth , update_user );
+router.get( '/getfine' , auth , getFine);
 
 
 // *****************************************************************************************************************
@@ -65,14 +66,16 @@ router.put( '/update_user' , auth , update_user );
 
 //*******************************************************************************************************************
 
-const{ getAllBooks , getIssuedBooks , issueBooksToUser , getBookByName , reIssue, returnBook , EmptyBooks } = require("../controller/book");
+const{ getAllBooks , getIssuedBooks , issueBooksToUser , getBookByName ,
+     reIssue, returnBook , EmptyBooks , requestbook } = require("../controller/book");
 
 router.get( '/getallbooks' ,getAllBooks );
 router.get( '/getissuedbooks' , auth ,getIssuedBooks );
 router.post( '/issuebook' , issueBooksToUser );
 router.get( '/getbookbyname' ,getBookByName );
-router.put( '/reissue' , reIssue );
+router.put( '/reissue' , auth , reIssue );
 router.get( '/returnBook' , returnBook );
 router.get('/getunavailablebooks' , EmptyBooks );
+router.post('/requestbook' , requestbook );
 
 module.exports=router;

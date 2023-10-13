@@ -43,16 +43,12 @@ const otpSchema = new mongoose.Schema({
  }
  
  otpSchema.pre("save" , async function(next){
-        
- 
  
      console.log("New doocument added");
  
  
         if(this.isNew){
-         await sendOtp(this.email , this.otp);
-        }
- 
+         await sendOtp(this.email , this.otp);  }
  
         next();
  

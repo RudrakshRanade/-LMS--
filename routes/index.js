@@ -72,7 +72,7 @@ const{ getAllBooks , getIssuedBooks , issueBooksToUser , getBookByName ,
 router.get( '/getallbooks' ,getAllBooks );
 router.get( '/getissuedbooks' , auth ,getIssuedBooks );
 router.post( '/issuebook' , issueBooksToUser );
-router.get( '/getbookbyname' ,getBookByName );
+router.post( '/getbookbyname' ,getBookByName );
 router.put( '/reissue' , auth , reIssue );
 router.get( '/returnBook' , returnBook );
 router.get('/getunavailablebooks' , EmptyBooks );

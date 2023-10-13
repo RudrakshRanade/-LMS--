@@ -7,6 +7,11 @@
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
+
+  "engines": {
+    "node": ">=14.20.1"
+  },
+
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -26,4 +31,5 @@
     "otp-generator": "^4.0.1",
     "qrcode": "^1.5.3"
   }
+  
 }

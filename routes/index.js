@@ -67,7 +67,7 @@ router.get( '/getfine' , auth , getFine);
 //*******************************************************************************************************************
 
 const{ getAllBooks , getIssuedBooks , issueBooksToUser , getBookByName ,
-     reIssue, returnBook , EmptyBooks , requestbook } = require("../controller/book");
+     reIssue, returnBook , EmptyBooks , requestbook , getBookFromCategory } = require("../controller/book");
 
 router.get( '/getallbooks' ,getAllBooks );
 router.get( '/getissuedbooks' , auth ,getIssuedBooks );
@@ -77,5 +77,6 @@ router.put( '/reissue' , auth , reIssue );
 router.get( '/returnBook' , returnBook );
 router.get('/getunavailablebooks' , EmptyBooks );
 router.post('/requestbook' , requestbook );
+router.post('/getbookfromcategory' , getBookFromCategory );
 
-module.exports=router;
+module.exports = router;

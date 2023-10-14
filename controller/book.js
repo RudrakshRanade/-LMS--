@@ -98,15 +98,21 @@ try{
     const{ name } = req.body;
    // const new_name=name.toLowerCase();
 
+
 if( !name ){
     return res.status(404).json({
         success:false,
-        message:"Please enter name"
-    })
+        message:"Please enter name"  })
 
 }
 
-const books = await Book_category.find({name: name});
+const regex = new RegExp(name, 'i');
+
+    // Search for documents where the 'name' field contains the input as a substring
+    const books = await Book_category.find({ name: { $regex: regex } });
+
+
+//const books = await Book_category.find({name: name});
 
     if ( books.length === 0 ) {
       return res.status(404).json({ 
@@ -144,9 +150,9 @@ exports.issueBooksToUser = async (req, res) => {
       if (!user) {
         return res.status(404).json({
           success: false,
-          message: 'User not found',
-        });
+          message: 'User not found',  });
       }
+
   
       // Ensure that the user is not already at the maximum allowed books limit (e.g., 5)
       const bookIds = [bookid1, bookid2, bookid3, bookid4, bookid5].filter(Boolean); 
@@ -185,8 +191,7 @@ exports.issueBooksToUser = async (req, res) => {
  
 
         console.log("After");
-        // const str = result.toString();
-        // arr.push(str); 
+
         user.books = user.books.concat(result);
       }
 
@@ -465,3 +470,36 @@ catch(error){
 
 
 }
+
+exports.getBookFromCategory = async(req,res) => {
+
+  try{
+  
+const { name } = req.body;
+
+const book_cat = await Book_category.findOne({ name : name }).populate("books");
+
+if( book_cat ){
+  return res.status(200).json({
+    success : true,
+    book_cat,
+    message : "Book id's fetched successfully"  })
+}
+
+else{
+  return res.status(404).json({
+    success : false,
+    message : "Book Category does not exist"  })
+}
+
+  }
+
+catch(error){
+  return res.status(500).json({
+    success : false,
+    message : "Cannot fetch data"  });
+
+}
+
+}
+

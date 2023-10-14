@@ -73,15 +73,14 @@ catch (err) {
 
 
 exports.scan = async(req,res)=>{
-        //const data=JSON.parse(req.query);
+        // const data = JSON.parse(req.body);
         const{ bookId , userId } = req.body;
         //verify token
-       // const {bookId,userId}=data;
+      //  const {bookId,userId}=data;
         if(!bookId || !userId){
           return res.status(404).json({
               success:false,
-              message:"All field must be filled"
-          });
+              message:"All field must be filled"  });
       }
       try {
         // Check if the QR code data with the provided userId and bookId exists
